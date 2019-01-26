@@ -9,9 +9,64 @@ firebase.auth().onAuthStateChanged(function(user) {
     // User is signed in.
     var displayName = user.displayName;
     var uid = user.uid;
+    var db = firebase.firestore();
+    var mydb = db.collection("users").doc(uid);
 
-    Elm.Main.init({
+    const app = Elm.Main.init({
       node: document.getElementById("root")
+    });
+
+    mydb.onSnapshot(function(mydata) {
+      app.ports.updatelabonow.send(mydata.data().labonow);
+      app.ports.updatelabotimes.send(mydata.data().history);
+    });
+
+    // logout
+    app.ports.logout.subscribe(() => {
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          location.reload();
+        });
+    });
+
+    // laboin
+    app.ports.laboin.subscribe(() => {
+      db.runTransaction(function(transaction) {
+        // This code may get re-run multiple times if there are conflicts.
+        return transaction.get(mydb).then(function(mydata) {
+          if (mydata.exists) {
+            if (mydata.data().labonow === false) {
+              transaction.update(mydb, {
+                history: firebase.firestore.FieldValue.arrayUnion(Date.now())
+              });
+            }
+            transaction.update(mydb, {
+              labonow: true
+            });
+          }
+        });
+      });
+    });
+
+    // laboout
+    app.ports.laboout.subscribe(() => {
+      db.runTransaction(function(transaction) {
+        // This code may get re-run multiple times if there are conflicts.
+        return transaction.get(mydb).then(function(mydata) {
+          if (mydata.exists) {
+            if (mydata.data().labonow === true) {
+              transaction.update(mydb, {
+                history: firebase.firestore.FieldValue.arrayUnion(Date.now())
+              });
+            }
+            transaction.update(mydb, {
+              labonow: false
+            });
+          }
+        });
+      });
     });
   } else {
     // User is signed out.
@@ -35,7 +90,7 @@ firebase.auth().onAuthStateChanged(function(user) {
       },
       // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
       signInFlow: "popup",
-      signInSuccessUrl: "",
+      signInSuccessUrl: "/",
       signInOptions: [
         // Leave the lines as is for the providers you want to offer your users.
         firebase.auth.GoogleAuthProvider.PROVIDER_ID
