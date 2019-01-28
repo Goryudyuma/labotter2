@@ -14,6 +14,7 @@ import Html
         )
 import Html.Attributes exposing (src, style)
 import Html.Events exposing (onClick)
+import Task
 import Time exposing (Month(..))
 
 
@@ -22,12 +23,12 @@ import Time exposing (Month(..))
 
 
 type alias Model =
-    { labonow : Bool, labotimes : List Int }
+    { labonow : Bool, labotimes : List Int, now : Time.Posix }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { labonow = False, labotimes = [] }, Cmd.none )
+    ( { labonow = False, labotimes = [], now = Time.millisToPosix 0 }, Cmd.none )
 
 
 
@@ -54,6 +55,7 @@ subscriptions model =
     Sub.batch
         [ updatelabonow UpdateLaboNow
         , updatelabotimes UpdateLaboTimes
+        , Time.every 1000 SetCurrentTime
         ]
 
 
@@ -63,6 +65,7 @@ type Msg
     | LaboOut
     | UpdateLaboNow Bool
     | UpdateLaboTimes (List Int)
+    | SetCurrentTime Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -76,10 +79,7 @@ update msg model =
                 | labonow = True
                 , labotimes =
                     model.labotimes
-                        ++ [ List.reverse model.labotimes
-                                |> List.head
-                                |> Maybe.withDefault 0
-                           ]
+                        ++ [ Time.posixToMillis model.now ]
               }
             , laboin ()
             )
@@ -89,10 +89,7 @@ update msg model =
                 | labonow = False
                 , labotimes =
                     model.labotimes
-                        ++ [ List.reverse model.labotimes
-                                |> List.head
-                                |> Maybe.withDefault 0
-                           ]
+                        ++ [ Time.posixToMillis model.now ]
               }
             , laboout ()
             )
@@ -102,6 +99,9 @@ update msg model =
 
         UpdateLaboTimes laboTimes ->
             ( { model | labotimes = laboTimes }, Cmd.none )
+
+        SetCurrentTime time ->
+            ( { model | now = time }, Cmd.none )
 
 
 
