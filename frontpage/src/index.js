@@ -4,6 +4,7 @@ import registerServiceWorker from "./registerServiceWorker";
 
 registerServiceWorker();
 
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     // User is signed in.
