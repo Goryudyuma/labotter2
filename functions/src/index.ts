@@ -15,13 +15,30 @@ db.settings(settings);
 //});
 
 export const firstLogin = functions.auth.user().onCreate(user => {
-  return db.collection("users")
+  return db
+    .collection("users")
     .doc(user.uid.toString())
-    .set({ labonow: false });
+    .set({ labonow: false, twitter: false })
+    .then(() => {
+      return db
+        .collection("users")
+        .doc(user.uid.toString())
+        .collection("credential")
+        .doc("twitter")
+        .set({ accessToken: "", secret: "" });
+    });
 });
 
 export const deleteUser = functions.auth.user().onDelete(user => {
-  return db.collection("users")
+  return db
+    .collection("users")
     .doc(user.uid.toString())
-    .delete();
+    .delete().then(() => {
+      return db
+        .collection("users")
+        .doc(user.uid.toString())
+        .collection("credential")
+        .doc("twitter")
+        .delete()
+    });
 });

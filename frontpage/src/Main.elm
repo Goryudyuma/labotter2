@@ -44,6 +44,9 @@ port laboin : () -> Cmd msg
 port laboout : () -> Cmd msg
 
 
+port link_twitter : () -> Cmd msg
+
+
 port updatelabonow : (Bool -> msg) -> Sub msg
 
 
@@ -55,7 +58,7 @@ subscriptions model =
     Sub.batch
         [ updatelabonow UpdateLaboNow
         , updatelabotimes UpdateLaboTimes
-        , Time.every 1000 SetCurrentTime
+        , Time.every 500 SetCurrentTime
         ]
 
 
@@ -66,6 +69,7 @@ type Msg
     | UpdateLaboNow Bool
     | UpdateLaboTimes (List Int)
     | SetCurrentTime Time.Posix
+    | LinkTwitter
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -102,6 +106,9 @@ update msg model =
 
         SetCurrentTime time ->
             ( { model | now = time }, Cmd.none )
+
+        LinkTwitter ->
+            ( model, link_twitter () )
 
 
 
@@ -155,6 +162,7 @@ view model =
     div []
         [ div []
             [ h1 [ style "display" "inline" ] [ text "らぼったあ" ]
+            , button [ onClick LinkTwitter, style "display" "inline-block" ] [ text "Twitter" ]
             , button [ onClick Logout, style "display" "inline-block" ] [ text "ログアウト" ]
             ]
         , div []
