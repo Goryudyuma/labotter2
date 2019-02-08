@@ -79,6 +79,9 @@ firebase.auth().onAuthStateChanged(function(user) {
           }
         });
       });
+
+      const laboin = firebase.functions().httpsCallable("laboin");
+      laboin();
     });
 
     // laboout
