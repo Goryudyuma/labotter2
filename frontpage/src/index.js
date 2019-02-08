@@ -6,30 +6,31 @@ registerServiceWorker();
 
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
+function register(result) {
+  if (result.credential) {
+    // Accounts successfully linked.
+    if (result.additionalUserInfo.providerId === "twitter.com") {
+      var credential = result.credential;
+      var user = result.user;
+      var uid = user.uid;
+      var db = firebase.firestore();
+      var mydb = db.collection("users").doc(uid);
+
+      var batch = db.batch();
+      batch.update(mydb, { twitter: true });
+      batch.update(mydb.collection("credential").doc("twitter"), {
+        accessToken: credential.accessToken,
+        secret: credential.secret
+      });
+      batch.commit();
+    }
+  }
+}
+
 firebase
   .auth()
   .getRedirectResult()
-  .then(function(result) {
-    if (result.credential) {
-      // Accounts successfully linked.
-      console.log(result);
-      if (result.additionalUserInfo.providerId === "twitter.com") {
-        var credential = result.credential;
-        var user = result.user;
-        var uid = user.uid;
-        var db = firebase.firestore();
-        var mydb = db.collection("users").doc(uid);
-
-        var batch = db.batch();
-        batch.update(mydb, { twitter: true });
-        batch.update(mydb.collection("credential").doc("twitter"), {
-          accessToken: credential.accessToken,
-          secret: credential.secret
-        });
-        batch.commit();
-      }
-    }
-  })
+  .then(register)
   .catch(function(error) {
     // Handle Errors here.
     // ...
@@ -121,7 +122,7 @@ firebase.auth().onAuthStateChanged(function(user) {
           // User successfully signed in.
           // Return type determines whether we continue the redirect automatically
           // or whether we leave that to developer to handle.
-          return false;
+          return register(authResult);
         },
         uiShown: function() {
           // The widget is rendered.

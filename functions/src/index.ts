@@ -5,8 +5,6 @@ import * as twitter from "twitter";
 admin.initializeApp(functions.config().firebase);
 
 const db = admin.firestore();
-const settings = { timestampsInSnapshots: true };
-db.settings(settings);
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
