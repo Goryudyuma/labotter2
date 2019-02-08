@@ -79,28 +79,32 @@ const makeTweet = (uid: string, tweetState: TweetState) => {
       if (mydata !== undefined) {
         if (mydata.twitter) {
           const tweetContent: string = mydata.tweetContent[tweetState];
-
-          return transaction
-            .get(
-              db
-                .collection("users")
-                .doc(uid)
-                .collection("credential")
-                .doc("twitter")
-            )
-            .then(credential => {
-              const credential_data = credential.data();
-              if (credential_data !== undefined) {
-                postTweet(
-                  credential_data.accessToken,
-                  credential_data.secret,
-                  tweetContent
-                );
-              }
-            });
+          if (tweetContent !== "" && tweetContent.length <= 140) {
+            return transaction
+              .get(
+                db
+                  .collection("users")
+                  .doc(uid)
+                  .collection("credential")
+                  .doc("twitter")
+              )
+              .then(credential => {
+                const credential_data = credential.data();
+                if (credential_data !== undefined) {
+                  postTweet(
+                    credential_data.accessToken,
+                    credential_data.secret,
+                    tweetContent
+                  );
+                }
+                return "ok";
+              });
+          } else {
+            return 'wrong tweet content: "' + tweetContent + '"';
+          }
         }
       }
-      return;
+      return "happened trouble";
     });
   });
 };
