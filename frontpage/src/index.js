@@ -80,8 +80,7 @@ firebase.auth().onAuthStateChanged(function(user) {
         });
       });
 
-      const laboin = firebase.functions().httpsCallable("laboin");
-      laboin();
+      firebase.functions().httpsCallable("laboin")();
     });
 
     // laboout
@@ -101,6 +100,8 @@ firebase.auth().onAuthStateChanged(function(user) {
           }
         });
       });
+
+      firebase.functions().httpsCallable("laboout")();
     });
 
     // link twitter

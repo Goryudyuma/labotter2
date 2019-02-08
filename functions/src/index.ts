@@ -15,11 +15,25 @@ db.settings(settings);
 //  response.send("Hello from Firebase!");
 //});
 
+const enum TweetState {
+  Laboin = "laboin",
+  Laboout = "laboout",
+  Labonow = "labonow"
+}
+
 export const firstLogin = functions.auth.user().onCreate(user => {
   return db
     .collection("users")
     .doc(user.uid.toString())
-    .set({ labonow: false, twitter: false })
+    .set({
+      labonow: false,
+      twitter: false,
+      tweetContent: {
+        laboin: "らぼいん!",
+        laboout: "らぼりだ!",
+        labonow: "らぼなう!"
+      }
+    })
     .then(() => {
       return db
         .collection("users")
@@ -56,44 +70,63 @@ const postTweet = (
     consumer_key: functions.config().twitter.key,
     consumer_secret: functions.config().twitter.secret
   }).post("statuses/update", { status: content }, (error, tweet, response) => {
-    if (!error) {
-      console.log(tweet);
-    }
     return response;
+  });
+};
+
+const makeTweet = (uid: string, tweetState: TweetState) => {
+  return db.runTransaction(transaction => {
+    return transaction.get(db.collection("users").doc(uid)).then(my => {
+      const mydata = my.data();
+      if (mydata !== undefined) {
+        if (mydata.twitter) {
+          const tweetContent: string = mydata.tweetContent[tweetState];
+
+          return transaction
+            .get(
+              db
+                .collection("users")
+                .doc(uid)
+                .collection("credential")
+                .doc("twitter")
+            )
+            .then(credential => {
+              const credential_data = credential.data();
+              if (credential_data !== undefined) {
+                postTweet(
+                  credential_data.accessToken,
+                  credential_data.secret,
+                  tweetContent
+                );
+              }
+            });
+        }
+      }
+      return;
+    });
   });
 };
 
 export const laboin = functions.https.onCall((data, context) => {
   if (context.auth !== undefined) {
     const uid = context.auth.uid;
-    return db.runTransaction(transaction => {
-      return transaction.get(db.collection("users").doc(uid)).then(my => {
-        const mydata = my.data();
-        if (mydata !== undefined) {
-          if (mydata.twitter) {
-            return transaction
-              .get(
-                db
-                  .collection("users")
-                  .doc(uid)
-                  .collection("credential")
-                  .doc("twitter")
-              )
-              .then(credential => {
-                const credential_data = credential.data();
-                if (credential_data !== undefined) {
-                  postTweet(
-                    credential_data.accessToken,
-                    credential_data.secret,
-                    "test"
-                  );
-                }
-              });
-          }
-        }
-        return;
-      });
-    });
+    return makeTweet(uid, TweetState.Laboin);
+  }
+  return "not login";
+});
+
+export const laboout = functions.https.onCall((data, context) => {
+  if (context.auth !== undefined) {
+    const uid = context.auth.uid;
+    return makeTweet(uid, TweetState.Laboout);
+  }
+  return "not login";
+});
+
+export const labonow = functions.https.onCall((data, context) => {
+  if (context.auth !== undefined) {
+    const uid = context.auth.uid;
+    return makeTweet(uid, TweetState.Labonow);
   }
   return "not login";
 });
