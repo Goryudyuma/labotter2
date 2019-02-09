@@ -24,7 +24,7 @@ export const firstLogin = functions.auth.user().onCreate(user => {
     .collection("users")
     .doc(user.uid.toString())
     .set({
-      labonow: false,
+      labointime: 0,
       twitter: false,
       tweetContent: {
         laboin: "らぼいん!",

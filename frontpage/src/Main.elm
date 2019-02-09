@@ -22,13 +22,19 @@ import Time exposing (Month(..))
 ---- MODEL ----
 
 
+type alias Period =
+    { labointime : Int
+    , laboouttime : Int
+    }
+
+
 type alias Model =
-    { labonow : Bool, labotimes : List Int, now : Time.Posix }
+    { labointime : Int, labotimes : List Period, now : Time.Posix }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { labonow = False, labotimes = [], now = Time.millisToPosix 0 }, Cmd.none )
+    ( { labointime = 0, labotimes = [], now = Time.millisToPosix 0 }, Cmd.none )
 
 
 
@@ -38,26 +44,26 @@ init =
 port logout : () -> Cmd msg
 
 
-port laboin : () -> Cmd msg
+port laboin : Int -> Cmd msg
 
 
-port laboout : () -> Cmd msg
+port laboout : Int -> Cmd msg
 
 
 port link_twitter : () -> Cmd msg
 
 
-port updatelabonow : (Bool -> msg) -> Sub msg
+port updatelabotimes : (List Period -> msg) -> Sub msg
 
 
-port updatelabotimes : (List Int -> msg) -> Sub msg
+port updatelabointime : (Int -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ updatelabonow UpdateLaboNow
-        , updatelabotimes UpdateLaboTimes
+        [ updatelabotimes UpdateLaboTimes
+        , updatelabointime UpdateLaboinTime
         , Time.every 500 SetCurrentTime
         ]
 
@@ -66,8 +72,8 @@ type Msg
     = Logout
     | LaboIn
     | LaboOut
-    | UpdateLaboNow Bool
-    | UpdateLaboTimes (List Int)
+    | UpdateLaboTimes (List Period)
+    | UpdateLaboinTime Int
     | SetCurrentTime Time.Posix
     | LinkTwitter
 
@@ -80,29 +86,31 @@ update msg model =
 
         LaboIn ->
             ( { model
-                | labonow = True
+                | labointime = Time.posixToMillis model.now
                 , labotimes =
                     model.labotimes
-                        ++ [ Time.posixToMillis model.now ]
               }
-            , laboin ()
+            , laboin <| Time.posixToMillis model.now
             )
 
         LaboOut ->
             ( { model
-                | labonow = False
+                | labointime = 0
                 , labotimes =
                     model.labotimes
-                        ++ [ Time.posixToMillis model.now ]
+                        ++ [ { labointime = model.labointime
+                             , laboouttime = Time.posixToMillis model.now
+                             }
+                           ]
               }
-            , laboout ()
+            , laboout <| Time.posixToMillis model.now
             )
-
-        UpdateLaboNow laboNow ->
-            ( { model | labonow = laboNow }, Cmd.none )
 
         UpdateLaboTimes laboTimes ->
             ( { model | labotimes = laboTimes }, Cmd.none )
+
+        UpdateLaboinTime labointime ->
+            ( { model | labointime = labointime }, Cmd.none )
 
         SetCurrentTime time ->
             ( { model | now = time }, Cmd.none )
@@ -118,8 +126,12 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
+        laboNow : Bool
+        laboNow =
+            model.labointime /= 0
+
         laboNowUpdateButton =
-            if model.labonow then
+            if laboNow then
                 button [ onClick LaboOut ] [ text "らぼりだ" ]
 
             else
@@ -129,35 +141,59 @@ view model =
         time2Str time =
             Just <| millisToTimeFormat time
 
+        laboinTime : Maybe String
         laboinTime =
-            if model.labonow then
-                List.reverse model.labotimes
-                    |> List.head
-                    |> Maybe.andThen time2Str
-                    |> Maybe.withDefault "-"
-
-            else if List.length model.labotimes >= 2 then
-                List.reverse model.labotimes
-                    |> List.drop 1
-                    |> List.head
-                    |> Maybe.andThen time2Str
-                    |> Maybe.withDefault "-"
+            if laboNow then
+                time2Str model.labointime
 
             else
-                "-"
+                case
+                    model.labotimes
+                        |> List.reverse
+                        |> List.head
+                of
+                    Just t ->
+                        t.labointime
+                            |> time2Str
 
+                    Nothing ->
+                        Nothing
+
+        laboinTimeStr : String
+        laboinTimeStr =
+            case laboinTime of
+                Just labointime ->
+                    labointime
+
+                Nothing ->
+                    "-"
+
+        labooutTime : Maybe String
         labooutTime =
-            if model.labonow then
-                "-"
-
-            else if List.length model.labotimes >= 1 then
-                List.reverse model.labotimes
-                    |> List.head
-                    |> Maybe.andThen time2Str
-                    |> Maybe.withDefault "-"
+            if laboNow then
+                Nothing
 
             else
-                "-"
+                case
+                    model.labotimes
+                        |> List.reverse
+                        |> List.head
+                of
+                    Just t ->
+                        t.laboouttime
+                            |> time2Str
+
+                    Nothing ->
+                        Nothing
+
+        labooutTimeStr : String
+        labooutTimeStr =
+            case labooutTime of
+                Just laboouttime ->
+                    laboouttime
+
+                Nothing ->
+                    "-"
     in
     div []
         [ div []
@@ -166,8 +202,8 @@ view model =
             , button [ onClick Logout, style "display" "inline-block" ] [ text "ログアウト" ]
             ]
         , div []
-            [ h2 [] [ text <| "らぼいん: " ++ laboinTime ]
-            , h2 [] [ text <| "らぼりだ: " ++ labooutTime ]
+            [ h2 [] [ text <| "らぼいん: " ++ laboinTimeStr ]
+            , h2 [] [ text <| "らぼりだ: " ++ labooutTimeStr ]
             ]
         , laboNowUpdateButton
         ]

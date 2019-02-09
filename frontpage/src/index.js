@@ -48,8 +48,8 @@ firebase.auth().onAuthStateChanged(function(user) {
       node: document.getElementById("root")
     });
 
-    mydb.onSnapshot(function(mydata) {
-      app.ports.updatelabonow.send(mydata.data().labonow);
+    mydb.onSnapshot(mydata => {
+      app.ports.updatelabointime.send(mydata.data().labointime);
       app.ports.updatelabotimes.send(mydata.data().history);
     });
 
@@ -64,18 +64,13 @@ firebase.auth().onAuthStateChanged(function(user) {
     });
 
     // laboin
-    app.ports.laboin.subscribe(() => {
+    app.ports.laboin.subscribe(labointime => {
       db.runTransaction(function(transaction) {
         // This code may get re-run multiple times if there are conflicts.
         return transaction.get(mydb).then(function(mydata) {
           if (mydata.exists) {
-            if (mydata.data().labonow === false) {
-              transaction.update(mydb, {
-                history: firebase.firestore.FieldValue.arrayUnion(Date.now())
-              });
-            }
             transaction.update(mydb, {
-              labonow: true
+              labointime: labointime
             });
           }
         });
@@ -85,18 +80,21 @@ firebase.auth().onAuthStateChanged(function(user) {
     });
 
     // laboout
-    app.ports.laboout.subscribe(() => {
+    app.ports.laboout.subscribe(laboouttime => {
       db.runTransaction(function(transaction) {
         // This code may get re-run multiple times if there are conflicts.
         return transaction.get(mydb).then(function(mydata) {
           if (mydata.exists) {
-            if (mydata.data().labonow === true) {
+            if (mydata.data().labointime !== 0) {
               transaction.update(mydb, {
-                history: firebase.firestore.FieldValue.arrayUnion(Date.now())
+                history: firebase.firestore.FieldValue.arrayUnion({
+                  labointime: mydata.data().labointime,
+                  laboouttime: laboouttime
+                })
               });
             }
             transaction.update(mydb, {
-              labonow: false
+              labointime: 0
             });
           }
         });
