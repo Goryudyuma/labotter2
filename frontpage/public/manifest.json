@@ -1,6 +1,8 @@
 {
-  "short_name": "Elm App",
-  "name": "Create Elm App Sample",
+  "short_name": "らぼったー2",
+  "name": "らぼったー2",
+  "description": "ラボの勤怠を管理します",
+  "lang": "ja-JP",
   "icons": [
     {
       "src": "favicon.ico",
