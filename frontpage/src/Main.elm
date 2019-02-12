@@ -161,12 +161,7 @@ view model =
 
         laboinTimeStr : String
         laboinTimeStr =
-            case laboinTime of
-                Just labointime ->
-                    labointime
-
-                Nothing ->
-                    "-"
+            Maybe.withDefault "-" laboinTime
 
         labooutTime : Maybe String
         labooutTime =
@@ -188,12 +183,7 @@ view model =
 
         labooutTimeStr : String
         labooutTimeStr =
-            case labooutTime of
-                Just laboouttime ->
-                    laboouttime
-
-                Nothing ->
-                    "-"
+            Maybe.withDefault "-" labooutTime
     in
     div []
         [ div []
