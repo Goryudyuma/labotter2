@@ -76,6 +76,7 @@ type Msg
     | UpdateLaboinTime Int
     | SetCurrentTime Time.Posix
     | LinkTwitter
+    | None
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -117,6 +118,9 @@ update msg model =
 
         LinkTwitter ->
             ( model, link_twitter () )
+
+        None ->
+            ( model, Cmd.none )
 
 
 
@@ -205,11 +209,13 @@ view model =
 
 main : Program () Model Msg
 main =
-    Browser.element
-        { view = view
-        , init = \_ -> init
+    Browser.application
+        { view = \model -> { title = "", body = [ view model ] }
+        , init = \_ -> \_ -> \_ -> init
         , update = update
         , subscriptions = subscriptions
+        , onUrlRequest = \_ -> None
+        , onUrlChange = \_ -> None
         }
 
 
