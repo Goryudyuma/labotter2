@@ -210,7 +210,7 @@ view model =
 main : Program () Model Msg
 main =
     Browser.application
-        { view = \model -> { title = "", body = [ view model ] }
+        { view = \model -> { title = "らぼったー2", body = [ view model ] }
         , init = \_ -> \_ -> \_ -> init
         , update = update
         , subscriptions = subscriptions
