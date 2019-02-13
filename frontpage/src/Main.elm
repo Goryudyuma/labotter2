@@ -1,6 +1,6 @@
 port module Main exposing (Model, Msg(..), init, main, update, view)
 
-import Browser
+import Browser exposing (Document)
 import Html
     exposing
         ( Html
@@ -19,6 +19,14 @@ import Time exposing (Month(..))
 
 
 
+---- ROUTING ----
+
+
+type Routing
+    = MainPage
+
+
+
 ---- MODEL ----
 
 
@@ -29,12 +37,22 @@ type alias Period =
 
 
 type alias Model =
-    { labointime : Int, labotimes : List Period, now : Time.Posix }
+    { labointime : Int
+    , labotimes : List Period
+    , now : Time.Posix
+    , routing : Routing
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { labointime = 0, labotimes = [], now = Time.millisToPosix 0 }, Cmd.none )
+    ( { labointime = 0
+      , labotimes = []
+      , now = Time.millisToPosix 0
+      , routing = MainPage
+      }
+    , Cmd.none
+    )
 
 
 
@@ -127,8 +145,21 @@ update msg model =
 ---- VIEW ----
 
 
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
+    let
+        routing =
+            case model.routing of
+                MainPage ->
+                    mainView
+    in
+    { title = "らぼったー2"
+    , body = [ routing model ]
+    }
+
+
+mainView : Model -> Html Msg
+mainView model =
     let
         laboNow : Bool
         laboNow =
@@ -189,7 +220,8 @@ view model =
         labooutTimeStr =
             Maybe.withDefault "-" labooutTime
     in
-    div []
+    div
+        []
         [ div []
             [ h1 [ style "display" "inline" ] [ text "らぼったあ" ]
             , button [ onClick LinkTwitter, style "display" "inline-block" ] [ text "Twitter" ]
@@ -210,7 +242,7 @@ view model =
 main : Program () Model Msg
 main =
     Browser.application
-        { view = \model -> { title = "らぼったー2", body = [ view model ] }
+        { view = view
         , init = \_ -> \_ -> \_ -> init
         , update = update
         , subscriptions = subscriptions
