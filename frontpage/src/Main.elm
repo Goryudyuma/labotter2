@@ -10,10 +10,11 @@ import Html
         , h1
         , h2
         , img
+        , input
         , text
         )
-import Html.Attributes exposing (src, style)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (placeholder, src, style, value)
+import Html.Events exposing (onClick, onInput)
 import Task
 import Time exposing (Month(..))
 
@@ -24,6 +25,7 @@ import Time exposing (Month(..))
 
 type Routing
     = MainPage
+    | ConfigPage
 
 
 
@@ -41,6 +43,14 @@ type alias Model =
     , labotimes : List Period
     , now : Time.Posix
     , routing : Routing
+    , tweetMessage : TweetMessage
+    }
+
+
+type alias TweetMessage =
+    { laboin : String
+    , laboout : String
+    , labonow : String
     }
 
 
@@ -50,6 +60,11 @@ init =
       , labotimes = []
       , now = Time.millisToPosix 0
       , routing = MainPage
+      , tweetMessage =
+            { laboin = "らぼいん!"
+            , laboout = "らぼりだ!"
+            , labonow = "らぼなう!"
+            }
       }
     , Cmd.none
     )
@@ -95,6 +110,7 @@ type Msg
     | SetCurrentTime Time.Posix
     | LinkTwitter
     | None
+    | ChangeTweetMessageLaboin String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -140,6 +156,16 @@ update msg model =
         None ->
             ( model, Cmd.none )
 
+        ChangeTweetMessageLaboin message ->
+            let
+                newTweetMessage : TweetMessage -> String -> TweetMessage
+                newTweetMessage tweetMessagex messagex =
+                    { tweetMessagex | laboin = messagex }
+            in
+            ( { model | tweetMessage = newTweetMessage model.tweetMessage message }
+            , Cmd.none
+            )
+
 
 
 ---- VIEW ----
@@ -151,15 +177,18 @@ view model =
         routing =
             case model.routing of
                 MainPage ->
-                    mainView
+                    mainPageView
+
+                ConfigPage ->
+                    configPageView
     in
     { title = "らぼったー2"
     , body = [ routing model ]
     }
 
 
-mainView : Model -> Html Msg
-mainView model =
+mainPageView : Model -> Html Msg
+mainPageView model =
     let
         laboNow : Bool
         laboNow =
@@ -232,6 +261,13 @@ mainView model =
             , h2 [] [ text <| "らぼりだ: " ++ labooutTimeStr ]
             ]
         , laboNowUpdateButton
+        ]
+
+
+configPageView : Model -> Html Msg
+configPageView model =
+    div []
+        [ input [ placeholder "Text to reverse", value model.tweetMessage.laboin, onInput ChangeTweetMessageLaboin ] []
         ]
 
 
