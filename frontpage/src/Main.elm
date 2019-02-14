@@ -1,4 +1,13 @@
-port module Main exposing (Model, Msg(..), init, main, update, view)
+port module Main exposing
+    ( Model
+    , Msg(..)
+    , Routing(..)
+    , changeRouting
+    , init
+    , main
+    , update
+    , view
+    )
 
 import Browser exposing (Document)
 import Html
@@ -17,6 +26,8 @@ import Html.Attributes exposing (placeholder, src, style, value)
 import Html.Events exposing (onClick, onInput)
 import Task
 import Time exposing (Month(..))
+import Url
+import Url.Parser exposing ((</>), Parser, int, map, oneOf, parse, s, top)
 
 
 
@@ -26,6 +37,19 @@ import Time exposing (Month(..))
 type Routing
     = MainPage
     | ConfigPage
+
+
+changeRouting : Url.Url -> Routing
+changeRouting url =
+    Maybe.withDefault MainPage (parse route url)
+
+
+route : Parser (Routing -> a) a
+route =
+    oneOf
+        [ map MainPage top
+        , map ConfigPage <| s "config"
+        ]
 
 
 
@@ -54,12 +78,12 @@ type alias TweetMessage =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Url.Url -> a -> ( Model, Cmd Msg )
+init url _ =
     ( { labointime = 0
       , labotimes = []
       , now = Time.millisToPosix 0
-      , routing = MainPage
+      , routing = changeRouting url
       , tweetMessage =
             { laboin = "らぼいん!"
             , laboout = "らぼりだ!"
@@ -110,6 +134,7 @@ type Msg
     | SetCurrentTime Time.Posix
     | LinkTwitter
     | None
+    | ChangeRouting Url.Url
     | ChangeTweetMessageLaboin String
 
 
@@ -155,6 +180,9 @@ update msg model =
 
         None ->
             ( model, Cmd.none )
+
+        ChangeRouting url ->
+            ( { model | routing = changeRouting url }, Cmd.none )
 
         ChangeTweetMessageLaboin message ->
             let
@@ -279,11 +307,11 @@ main : Program () Model Msg
 main =
     Browser.application
         { view = view
-        , init = \_ -> \_ -> \_ -> init
+        , init = \_ -> init
         , update = update
         , subscriptions = subscriptions
         , onUrlRequest = \_ -> None
-        , onUrlChange = \_ -> None
+        , onUrlChange = ChangeRouting
         }
 
 

@@ -1,22 +1,55 @@
-module Tests exposing (..)
+module Tests exposing (all)
 
-import Test exposing (..)
 import Expect
+import Main exposing (..)
+import Test exposing (..)
+import Url
+
 
 
 -- Check out http://package.elm-lang.org/packages/elm-community/elm-test/latest to learn more about testing in Elm!
 
 
+emptyUrl =
+    { protocol = Url.Http
+    , host = ""
+    , port_ = Nothing
+    , path = ""
+    , query = Nothing
+    , fragment = Nothing
+    }
+
+
+url2Routing : String -> Routing
+url2Routing url =
+    Url.fromString url
+        |> Maybe.withDefault emptyUrl
+        |> changeRouting
+
+
 all : Test
 all =
     describe "A Test Suite"
-        [ test "Addition" <|
-            \_ ->
-                Expect.equal 10 (3 + 7)
-        , test "String.left" <|
-            \_ ->
-                Expect.equal "a" (String.left 1 "abcdefg")
-        , test "This test should fail" <|
-            \_ ->
-                Expect.fail "failed as expected!"
+        [ describe "changeRouting"
+            [ test "root" <|
+                let
+                    expected =
+                        MainPage
+
+                    actual =
+                        url2Routing "https://labotter2.firebaseapp.com/"
+                in
+                \_ ->
+                    Expect.equal expected actual
+            , test "config" <|
+                let
+                    expected =
+                        ConfigPage
+
+                    actual =
+                        url2Routing "https://labotter2.firebaseapp.com/config"
+                in
+                \_ ->
+                    Expect.equal expected actual
+            ]
         ]
