@@ -22,7 +22,7 @@ import Html
         , input
         , text
         )
-import Html.Attributes exposing (placeholder, src, style, value)
+import Html.Attributes exposing (id, placeholder, src, style, value)
 import Html.Events exposing (onClick, onInput)
 import Task
 import Time exposing (Month(..))
@@ -37,6 +37,7 @@ import Url.Parser exposing ((</>), Parser, int, map, oneOf, parse, s, top)
 type Routing
     = MainPage
     | ConfigPage
+    | LoginPage
 
 
 changeRouting : Url.Url -> Routing
@@ -49,6 +50,7 @@ route =
     oneOf
         [ map MainPage top
         , map ConfigPage <| s "config"
+        , map LoginPage <| s "login"
         ]
 
 
@@ -80,17 +82,24 @@ type alias TweetMessage =
 
 init : Url.Url -> a -> ( Model, Cmd Msg )
 init url _ =
+    let
+        nextRoute : Routing
+        nextRoute =
+            changeRouting url
+    in
     ( { labointime = 0
       , labotimes = []
       , now = Time.millisToPosix 0
-      , routing = changeRouting url
+      , routing = nextRoute
       , tweetMessage =
             { laboin = "らぼいん!"
             , laboout = "らぼりだ!"
             , labonow = "らぼなう!"
             }
       }
-    , Cmd.none
+    , Cmd.batch
+        [ updateChangeRoutingCmd nextRoute
+        ]
     )
 
 
@@ -116,6 +125,9 @@ port updatelabotimes : (List Period -> msg) -> Sub msg
 port updatelabointime : (Int -> msg) -> Sub msg
 
 
+port showloginpage : () -> Cmd msg
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -136,6 +148,16 @@ type Msg
     | None
     | ChangeRouting Url.Url
     | ChangeTweetMessageLaboin String
+
+
+updateChangeRoutingCmd : Routing -> Cmd Msg
+updateChangeRoutingCmd nextRoute =
+    case nextRoute of
+        LoginPage ->
+            showloginpage ()
+
+        other ->
+            Cmd.none
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -182,7 +204,12 @@ update msg model =
             ( model, Cmd.none )
 
         ChangeRouting url ->
-            ( { model | routing = changeRouting url }, Cmd.none )
+            let
+                nextRoute : Routing
+                nextRoute =
+                    changeRouting url
+            in
+            ( { model | routing = nextRoute }, updateChangeRoutingCmd nextRoute )
 
         ChangeTweetMessageLaboin message ->
             let
@@ -209,6 +236,9 @@ view model =
 
                 ConfigPage ->
                     configPageView
+
+                LoginPage ->
+                    loginPageView
     in
     { title = "らぼったー2"
     , body = [ routing model ]
@@ -296,6 +326,14 @@ configPageView : Model -> Html Msg
 configPageView model =
     div []
         [ input [ placeholder "Text to reverse", value model.tweetMessage.laboin, onInput ChangeTweetMessageLaboin ] []
+        ]
+
+
+loginPageView : Model -> Html Msg
+loginPageView model =
+    div []
+        [ div [ id "firebaseui-auth-container" ] []
+        , div [ id "loader" ] [ text "Loading..." ]
         ]
 
 

@@ -51,5 +51,15 @@ all =
                 in
                 \_ ->
                     Expect.equal expected actual
+            , test "login" <|
+                let
+                    expected =
+                        LoginPage
+
+                    actual =
+                        url2Routing "https://labotter2.firebaseapp.com/login"
+                in
+                \_ ->
+                    Expect.equal expected actual
             ]
         ]
