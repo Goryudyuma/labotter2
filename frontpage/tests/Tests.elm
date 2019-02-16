@@ -20,46 +20,80 @@ emptyUrl =
     }
 
 
-url2Routing : String -> Routing
-url2Routing url =
+url2Routing : Bool -> String -> Routing
+url2Routing isUserLoggedIn url =
     Url.fromString url
         |> Maybe.withDefault emptyUrl
-        |> changeRouting
+        |> changeRouting isUserLoggedIn
 
 
 all : Test
 all =
     describe "A Test Suite"
         [ describe "changeRouting"
-            [ test "root" <|
-                let
-                    expected =
-                        MainPage
+            [ describe "ログイン済みの時"
+                [ test "root" <|
+                    let
+                        expected =
+                            MainPage
 
-                    actual =
-                        url2Routing "https://labotter2.firebaseapp.com/"
-                in
-                \_ ->
-                    Expect.equal expected actual
-            , test "config" <|
-                let
-                    expected =
-                        ConfigPage
+                        actual =
+                            url2Routing True "https://labotter2.firebaseapp.com/"
+                    in
+                    \_ ->
+                        Expect.equal expected actual
+                , test "config" <|
+                    let
+                        expected =
+                            ConfigPage
 
-                    actual =
-                        url2Routing "https://labotter2.firebaseapp.com/config"
-                in
-                \_ ->
-                    Expect.equal expected actual
-            , test "login" <|
-                let
-                    expected =
-                        LoginPage
+                        actual =
+                            url2Routing True "https://labotter2.firebaseapp.com/config"
+                    in
+                    \_ ->
+                        Expect.equal expected actual
+                , test "login" <|
+                    let
+                        expected =
+                            LoginPage
 
-                    actual =
-                        url2Routing "https://labotter2.firebaseapp.com/login"
-                in
-                \_ ->
-                    Expect.equal expected actual
+                        actual =
+                            url2Routing True "https://labotter2.firebaseapp.com/login"
+                    in
+                    \_ ->
+                        Expect.equal expected actual
+                ]
+            , describe "ログインしていない時"
+                [ test "root" <|
+                    let
+                        expected =
+                            TopPage
+
+                        actual =
+                            url2Routing False "https://labotter2.firebaseapp.com/"
+                    in
+                    \_ ->
+                        Expect.equal expected actual
+                , test "config" <|
+                    let
+                        expected =
+                            TopPage
+
+                        actual =
+                            url2Routing False "https://labotter2.firebaseapp.com/config"
+                    in
+                    \_ ->
+                        Expect.equal expected actual
+                , test "login" <|
+                    let
+                        expected =
+                            LoginPage
+
+                        actual =
+                            url2Routing False "https://labotter2.firebaseapp.com/login"
+                    in
+                    \_ ->
+                        Expect.equal expected actual
+                ]
             ]
         ]

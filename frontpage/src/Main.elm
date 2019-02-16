@@ -10,9 +10,11 @@ port module Main exposing
     )
 
 import Browser exposing (Document)
+import Browser.Navigation as Nav
 import Html
     exposing
         ( Html
+        , a
         , br
         , button
         , div
@@ -20,9 +22,10 @@ import Html
         , h2
         , img
         , input
+        , li
         , text
         )
-import Html.Attributes exposing (id, placeholder, src, style, value)
+import Html.Attributes exposing (href, id, placeholder, src, style, value)
 import Html.Events exposing (onClick, onInput)
 import Task
 import Time exposing (Month(..))
@@ -35,14 +38,39 @@ import Url.Parser exposing ((</>), Parser, int, map, oneOf, parse, s, top)
 
 
 type Routing
-    = MainPage
+    = TopPage
+    | MainPage
     | ConfigPage
     | LoginPage
 
 
-changeRouting : Url.Url -> Routing
-changeRouting url =
-    Maybe.withDefault MainPage (parse route url)
+changeRouting : Bool -> Url.Url -> Routing
+changeRouting isUserLoggedIn url =
+    let
+        nextPage =
+            Maybe.withDefault TopPage (parse route url)
+    in
+    nextRouting isUserLoggedIn nextPage
+
+
+nextRouting : Bool -> Routing -> Routing
+nextRouting isUserLoggedIn nextPage =
+    case isUserLoggedIn of
+        True ->
+            case nextPage of
+                TopPage ->
+                    MainPage
+
+                other ->
+                    other
+
+        False ->
+            case nextPage of
+                LoginPage ->
+                    LoginPage
+
+                other ->
+                    TopPage
 
 
 route : Parser (Routing -> a) a
@@ -70,6 +98,8 @@ type alias Model =
     , now : Time.Posix
     , routing : Routing
     , tweetMessage : TweetMessage
+    , isUserLoggedIn : Bool
+    , key : Nav.Key
     }
 
 
@@ -80,12 +110,12 @@ type alias TweetMessage =
     }
 
 
-init : Url.Url -> a -> ( Model, Cmd Msg )
-init url _ =
+init : Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init url key =
     let
         nextRoute : Routing
         nextRoute =
-            changeRouting url
+            changeRouting False url
     in
     ( { labointime = 0
       , labotimes = []
@@ -96,6 +126,8 @@ init url _ =
             , laboout = "らぼりだ!"
             , labonow = "らぼなう!"
             }
+      , isUserLoggedIn = False
+      , key = key
       }
     , Cmd.batch
         [ updateChangeRoutingCmd nextRoute
@@ -125,6 +157,9 @@ port updatelabotimes : (List Period -> msg) -> Sub msg
 port updatelabointime : (Int -> msg) -> Sub msg
 
 
+port userlogin : (Bool -> msg) -> Sub msg
+
+
 port showloginpage : () -> Cmd msg
 
 
@@ -133,12 +168,14 @@ subscriptions model =
     Sub.batch
         [ updatelabotimes UpdateLaboTimes
         , updatelabointime UpdateLaboinTime
+        , userlogin Login
         , Time.every 500 SetCurrentTime
         ]
 
 
 type Msg
     = Logout
+    | Login Bool
     | LaboIn
     | LaboOut
     | UpdateLaboTimes (List Period)
@@ -148,6 +185,7 @@ type Msg
     | None
     | ChangeRouting Url.Url
     | ChangeTweetMessageLaboin String
+    | RequestChangeUrl Browser.UrlRequest
 
 
 updateChangeRoutingCmd : Routing -> Cmd Msg
@@ -164,7 +202,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Logout ->
-            ( model, logout () )
+            ( { model | isUserLoggedIn = False }, logout () )
+
+        Login isUserLoggedIn ->
+            let
+                nextRoute =
+                    nextRouting isUserLoggedIn model.routing
+            in
+            ( { model | isUserLoggedIn = isUserLoggedIn, routing = nextRoute }, updateChangeRoutingCmd nextRoute )
 
         LaboIn ->
             ( { model
@@ -205,9 +250,8 @@ update msg model =
 
         ChangeRouting url ->
             let
-                nextRoute : Routing
                 nextRoute =
-                    changeRouting url
+                    changeRouting model.isUserLoggedIn url
             in
             ( { model | routing = nextRoute }, updateChangeRoutingCmd nextRoute )
 
@@ -221,6 +265,14 @@ update msg model =
             , Cmd.none
             )
 
+        RequestChangeUrl urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
 
 
 ---- VIEW ----
@@ -231,6 +283,9 @@ view model =
     let
         routing =
             case model.routing of
+                TopPage ->
+                    topPageView
+
                 MainPage ->
                     mainPageView
 
@@ -337,6 +392,19 @@ loginPageView model =
         ]
 
 
+topPageView : Model -> Html Msg
+topPageView model =
+    div []
+        [ text "らぼったーへようこそ"
+        , viewLink "/login"
+        ]
+
+
+viewLink : String -> Html msg
+viewLink path =
+    li [] [ a [ href path ] [ text path ] ]
+
+
 
 ---- PROGRAM ----
 
@@ -348,7 +416,7 @@ main =
         , init = \_ -> init
         , update = update
         , subscriptions = subscriptions
-        , onUrlRequest = \_ -> None
+        , onUrlRequest = RequestChangeUrl
         , onUrlChange = ChangeRouting
         }
 

@@ -29,6 +29,7 @@ function register(result) {
       batch.commit();
     }
   }
+  return true;
 }
 
 firebase
@@ -41,7 +42,10 @@ firebase
   });
 
 firebase.auth().onAuthStateChanged(function(user) {
+  console.log(user);
   if (user) {
+    app.ports.userlogin.send(true);
+
     // User is signed in.
     var displayName = user.displayName;
     var uid = user.uid;
