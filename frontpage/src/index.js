@@ -42,7 +42,6 @@ firebase
   });
 
 firebase.auth().onAuthStateChanged(function(user) {
-  console.log(user);
   if (user) {
     app.ports.userlogin.send(true);
 
