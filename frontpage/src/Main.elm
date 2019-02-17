@@ -11,6 +11,7 @@ port module Main exposing
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
+import Element
 import Html
     exposing
         ( Html
@@ -23,13 +24,15 @@ import Html
         , img
         , input
         , li
+        , span
         , text
         )
-import Html.Attributes exposing (href, id, placeholder, src, style, value)
+import Html.Attributes exposing (class, href, id, placeholder, src, style, value)
 import Html.Events exposing (onClick, onInput)
 import Task
 import Time exposing (Month(..))
 import Url
+import Url.Builder
 import Url.Parser exposing ((</>), Parser, int, map, oneOf, parse, s, top)
 
 
@@ -394,15 +397,34 @@ loginPageView model =
 
 topPageView : Model -> Html Msg
 topPageView model =
-    div []
-        [ text "らぼったーへようこそ"
-        , viewLink "/login"
+    Element.layout [] <|
+        Element.column [ Element.width Element.fill, Element.height Element.fill ]
+            [ Element.el
+                [ Element.height Element.fill
+                , Element.centerX
+                , Element.padding 10
+                ]
+              <|
+                Element.el [ Element.alignBottom ] <|
+                    Element.text "らぼったーへようこそ！"
+            , Element.el
+                [ Element.height Element.fill
+                , Element.centerX
+                , Element.padding 10
+                ]
+              <|
+                Element.html <|
+                    viewLink "/login" "ログイン"
+            ]
+
+
+viewLink : String -> String -> Html msg
+viewLink path content =
+    a [ href path ]
+        [ button [ class "mdc-button mdc-button--raised mdc-button--outlined" ]
+            [ span [ class "mdc-button__label" ] [ text content ]
+            ]
         ]
-
-
-viewLink : String -> Html msg
-viewLink path =
-    li [] [ a [ href path ] [ text path ] ]
 
 
 
