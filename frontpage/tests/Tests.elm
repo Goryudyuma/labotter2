@@ -4,6 +4,7 @@ import Expect
 import Main exposing (..)
 import Test exposing (..)
 import Url
+import Url.Parser exposing (parse)
 
 
 
@@ -18,6 +19,15 @@ emptyUrl =
     , query = Nothing
     , fragment = Nothing
     }
+
+
+changeRouting : Bool -> Url.Url -> Routing
+changeRouting isUserLoggedIn url =
+    let
+        nextPage =
+            Maybe.withDefault TopPage (parse route url)
+    in
+    realRouting nextPage isUserLoggedIn
 
 
 url2Routing : Bool -> String -> Routing

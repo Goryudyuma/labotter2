@@ -2,9 +2,10 @@ port module Main exposing
     ( Model
     , Msg(..)
     , Routing(..)
-    , changeRouting
     , init
     , main
+    , realRouting
+    , route
     , update
     , view
     )
@@ -24,7 +25,7 @@ import Html
         , span
         , text
         )
-import Html.Attributes exposing (class, href, id, placeholder, style, value)
+import Html.Attributes exposing (class, hidden, href, id, placeholder, style, value)
 import Html.Events exposing (onClick, onInput)
 import Time exposing (Month(..))
 import Url
@@ -42,17 +43,14 @@ type Routing
     | LoginPage
 
 
-changeRouting : Bool -> Url.Url -> Routing
-changeRouting isUserLoggedIn url =
-    let
-        nextPage =
-            Maybe.withDefault TopPage (parse route url)
-    in
-    nextRouting isUserLoggedIn nextPage
+url2Routing : Url.Url -> Routing
+url2Routing url =
+    parse route url
+        |> Maybe.withDefault TopPage
 
 
-nextRouting : Bool -> Routing -> Routing
-nextRouting isUserLoggedIn nextPage =
+realRouting : Routing -> Bool -> Routing
+realRouting nextPage isUserLoggedIn =
     case isUserLoggedIn of
         True ->
             case nextPage of
@@ -110,15 +108,10 @@ type alias TweetMessage =
 
 init : Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init url key =
-    let
-        nextRoute : Routing
-        nextRoute =
-            changeRouting False url
-    in
     ( { labointime = 0
       , labotimes = []
       , now = Time.millisToPosix 0
-      , routing = nextRoute
+      , routing = url2Routing url
       , tweetMessage =
             { laboin = "らぼいん!"
             , laboout = "らぼりだ!"
@@ -127,9 +120,7 @@ init url key =
       , isUserLoggedIn = False
       , key = key
       }
-    , Cmd.batch
-        [ updateChangeRoutingCmd nextRoute
-        ]
+    , Cmd.none
     )
 
 
@@ -158,9 +149,6 @@ port updatelabointime : (Int -> msg) -> Sub msg
 port userlogin : (Bool -> msg) -> Sub msg
 
 
-port showloginpage : () -> Cmd msg
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -186,16 +174,6 @@ type Msg
     | RequestChangeUrl Browser.UrlRequest
 
 
-updateChangeRoutingCmd : Routing -> Cmd Msg
-updateChangeRoutingCmd nextRoute =
-    case nextRoute of
-        LoginPage ->
-            showloginpage ()
-
-        other ->
-            Cmd.none
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -203,11 +181,7 @@ update msg model =
             ( { model | isUserLoggedIn = False }, logout () )
 
         Login isUserLoggedIn ->
-            let
-                nextRoute =
-                    nextRouting isUserLoggedIn model.routing
-            in
-            ( { model | isUserLoggedIn = isUserLoggedIn, routing = nextRoute }, updateChangeRoutingCmd nextRoute )
+            ( { model | isUserLoggedIn = isUserLoggedIn }, Cmd.none )
 
         LaboIn ->
             ( { model
@@ -247,11 +221,7 @@ update msg model =
             ( model, Cmd.none )
 
         ChangeRouting url ->
-            let
-                nextRoute =
-                    changeRouting model.isUserLoggedIn url
-            in
-            ( { model | routing = nextRoute }, updateChangeRoutingCmd nextRoute )
+            ( { model | routing = url2Routing url }, Cmd.none )
 
         ChangeTweetMessageLaboin message ->
             let
@@ -280,7 +250,7 @@ view : Model -> Document Msg
 view model =
     let
         routing =
-            case model.routing of
+            case realRouting model.routing model.isUserLoggedIn of
                 TopPage ->
                     topPageView
 
@@ -292,9 +262,17 @@ view model =
 
                 LoginPage ->
                     loginPageView
+
+        firebaseui =
+            model.routing == LoginPage
     in
     { title = "らぼったー2"
-    , body = [ routing model ]
+    , body =
+        [ div [ hidden <| not firebaseui ]
+            [ div [ id "firebaseui-auth-container" ] []
+            ]
+        , routing model
+        ]
     }
 
 
@@ -384,10 +362,7 @@ configPageView model =
 
 loginPageView : Model -> Html Msg
 loginPageView model =
-    div []
-        [ div [ id "firebaseui-auth-container" ] []
-        , div [ id "loader" ] [ text "Loading..." ]
-        ]
+    div [] []
 
 
 topPageView : Model -> Html Msg
