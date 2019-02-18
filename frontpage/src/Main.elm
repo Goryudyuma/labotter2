@@ -16,24 +16,19 @@ import Html
     exposing
         ( Html
         , a
-        , br
         , button
         , div
         , h1
         , h2
-        , img
         , input
-        , li
         , span
         , text
         )
-import Html.Attributes exposing (class, href, id, placeholder, src, style, value)
+import Html.Attributes exposing (class, href, id, placeholder, style, value)
 import Html.Events exposing (onClick, onInput)
-import Task
 import Time exposing (Month(..))
 import Url
-import Url.Builder
-import Url.Parser exposing ((</>), Parser, int, map, oneOf, parse, s, top)
+import Url.Parser exposing ((</>), Parser, map, oneOf, parse, s, top)
 
 
 
