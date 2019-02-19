@@ -248,6 +248,45 @@ update msg model =
 
 view : Model -> Document Msg
 view model =
+    { title = "らぼったー2"
+    , body =
+        [ Element.layout [] <|
+            Element.column [ Element.height Element.fill, Element.width Element.fill ]
+                [ Element.el
+                    [ Element.height Element.fill
+                    , Element.width Element.fill
+                    ]
+                  <|
+                    headerView
+                , Element.el
+                    [ Element.height <| Element.fillPortion 8
+                    , Element.width Element.fill
+                    ]
+                  <|
+                    mainView model
+                , Element.el
+                    [ Element.height Element.fill
+                    , Element.width Element.fill
+                    ]
+                  <|
+                    footerView
+                ]
+        ]
+    }
+
+
+footerView : Element.Element Msg
+footerView =
+    Element.html <| div [] []
+
+
+headerView : Element.Element Msg
+headerView =
+    Element.html <| div [] []
+
+
+mainView : Model -> Element.Element Msg
+mainView model =
     let
         routing =
             case realRouting model.routing model.isUserLoggedIn of
@@ -266,17 +305,19 @@ view model =
         firebaseui =
             model.routing == LoginPage
     in
-    { title = "らぼったー2"
-    , body =
-        [ div [ hidden <| not firebaseui ]
-            [ div [ id "firebaseui-auth-container" ] []
-            ]
+    Element.column
+        [ Element.height Element.fill
+        , Element.width Element.fill
+        ]
+        [ Element.html <|
+            div [ hidden <| not firebaseui ]
+                [ div [ id "firebaseui-auth-container" ] []
+                ]
         , routing model
         ]
-    }
 
 
-mainPageView : Model -> Html Msg
+mainPageView : Model -> Element.Element Msg
 mainPageView model =
     let
         laboNow : Bool
@@ -338,63 +379,64 @@ mainPageView model =
         labooutTimeStr =
             Maybe.withDefault "-" labooutTime
     in
-    div
-        []
-        [ div []
-            [ h1 [ style "display" "inline" ] [ text "らぼったあ" ]
-            , button [ onClick LinkTwitter, style "display" "inline-block" ] [ text "Twitter" ]
-            , button [ onClick Logout, style "display" "inline-block" ] [ text "ログアウト" ]
+    Element.html <|
+        div
+            []
+            [ div []
+                [ h1 [ style "display" "inline" ] [ text "らぼったあ" ]
+                , button [ onClick LinkTwitter, style "display" "inline-block" ] [ text "Twitter" ]
+                , button [ onClick Logout, style "display" "inline-block" ] [ text "ログアウト" ]
+                ]
+            , div []
+                [ h2 [] [ text <| "らぼいん: " ++ laboinTimeStr ]
+                , h2 [] [ text <| "らぼりだ: " ++ labooutTimeStr ]
+                ]
+            , laboNowUpdateButton
             ]
-        , div []
-            [ h2 [] [ text <| "らぼいん: " ++ laboinTimeStr ]
-            , h2 [] [ text <| "らぼりだ: " ++ labooutTimeStr ]
-            ]
-        , laboNowUpdateButton
-        ]
 
 
-configPageView : Model -> Html Msg
+configPageView : Model -> Element.Element Msg
 configPageView model =
-    div []
-        [ input [ placeholder "Text to reverse", value model.tweetMessage.laboin, onInput ChangeTweetMessageLaboin ] []
-        ]
+    Element.html <|
+        div []
+            [ input [ placeholder "Text to reverse", value model.tweetMessage.laboin, onInput ChangeTweetMessageLaboin ] []
+            ]
 
 
-loginPageView : Model -> Html Msg
+loginPageView : Model -> Element.Element Msg
 loginPageView model =
-    div [] []
+    Element.html <| div [] []
 
 
-topPageView : Model -> Html Msg
+topPageView : Model -> Element.Element Msg
 topPageView model =
-    Element.layout [] <|
-        Element.column [ Element.width Element.fill, Element.height Element.fill ]
-            [ Element.el
-                [ Element.height Element.fill
-                , Element.centerX
-                , Element.padding 10
-                ]
-              <|
-                Element.el [ Element.alignBottom ] <|
-                    Element.text "らぼったーへようこそ！"
-            , Element.el
-                [ Element.height Element.fill
-                , Element.centerX
-                , Element.padding 10
-                ]
-              <|
-                Element.html <|
-                    viewLink "/login" "ログイン"
+    Element.column [ Element.width Element.fill, Element.height Element.fill ]
+        [ Element.el
+            [ Element.height Element.fill
+            , Element.centerX
+            , Element.padding 10
             ]
-
-
-viewLink : String -> String -> Html msg
-viewLink path content =
-    a [ href path ]
-        [ button [ class "mdc-button mdc-button--raised mdc-button--outlined" ]
-            [ span [ class "mdc-button__label" ] [ text content ]
+          <|
+            Element.el [ Element.alignBottom ] <|
+                Element.text "らぼったーへようこそ！"
+        , Element.el
+            [ Element.height Element.fill
+            , Element.centerX
+            , Element.padding 10
             ]
+          <|
+            viewLink "/login" "ログイン"
         ]
+
+
+viewLink : String -> String -> Element.Element msg
+viewLink path content =
+    Element.html <|
+        a [ href path ]
+            [ button [ class "mdc-button mdc-button--raised mdc-button--outlined" ]
+                [ span [ class "mdc-button__label" ] [ text content ]
+                ]
+            ]
 
 
 
