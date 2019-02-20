@@ -248,6 +248,20 @@ update msg model =
 
 view : Model -> Document Msg
 view model =
+    let
+        footer =
+            case model.isUserLoggedIn of
+                True ->
+                    Element.el
+                        [ Element.height Element.fill
+                        , Element.width Element.fill
+                        ]
+                    <|
+                        footerView
+
+                False ->
+                    Element.none
+    in
     { title = "らぼったー2"
     , body =
         [ Element.layout [] <|
@@ -264,25 +278,33 @@ view model =
                     ]
                   <|
                     mainView model
-                , Element.el
-                    [ Element.height Element.fill
-                    , Element.width Element.fill
-                    ]
-                  <|
-                    footerView
+                , footer
                 ]
         ]
     }
 
 
-footerView : Element.Element Msg
-footerView =
-    Element.html <| div [] []
-
-
 headerView : Element.Element Msg
 headerView =
     Element.html <| div [] []
+
+
+footerView : Element.Element Msg
+footerView =
+    Element.row [ Element.height Element.fill, Element.width Element.fill ]
+        [ Element.el [ Element.height Element.fill, Element.width <| Element.fillPortion 1 ] <|
+            Element.el [ Element.centerX, Element.centerY ] <|
+                Element.html <|
+                    a [] [ text "Home" ]
+        , Element.el [ Element.height Element.fill, Element.width <| Element.fillPortion 2 ] <|
+            Element.el [ Element.centerX, Element.centerY ] <|
+                Element.html <|
+                    a [] [ text "らぼなう！" ]
+        , Element.el [ Element.height Element.fill, Element.width <| Element.fillPortion 1 ] <|
+            Element.el [ Element.centerX, Element.centerY ] <|
+                Element.html <|
+                    a [] [ text "config" ]
+        ]
 
 
 mainView : Model -> Element.Element Msg
