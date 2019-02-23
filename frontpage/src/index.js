@@ -1,6 +1,19 @@
 import "./main.css";
 import { Elm } from "./Main.elm";
 import registerServiceWorker from "./registerServiceWorker";
+import * as firebaseui from "firebaseui";
+import * as firebase from"firebase";
+
+// Initialize Firebase
+const config = {
+  apiKey: "AIzaSyBiBBVV6O357R9ARQCvhmJAIB08ZA469EQ",
+  authDomain: "labotter2.firebaseapp.com",
+  databaseURL: "https://labotter2.firebaseio.com",
+  projectId: "labotter2",
+  storageBucket: "labotter2.appspot.com",
+  messagingSenderId: "216536496923"
+};
+firebase.initializeApp(config);
 
 registerServiceWorker();
 
