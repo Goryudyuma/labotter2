@@ -1,21 +1,21 @@
-'use strict';
+"use strict";
 
-const autoprefixer = require('autoprefixer');
-const path = require('path');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
-const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
-const getClientEnvironment = require('./env');
-const paths = require('../config/paths');
+const autoprefixer = require("autoprefixer");
+const path = require("path");
+const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
+const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
+const getClientEnvironment = require("./env");
+const paths = require("../config/paths");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
-const publicPath = '/';
+const publicPath = "/";
 // `publicUrl` is just like `publicPath`, but we will provide it to our app
 // as %PUBLIC_URL% in `index.html` and `process.env.PUBLIC_URL` in JavaScript.
 // Omit trailing slash as %PUBLIC_URL%/xyz looks better than %PUBLIC_URL%xyz.
-const publicUrl = '';
+const publicUrl = "";
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
 
@@ -23,16 +23,16 @@ const env = getClientEnvironment(publicUrl);
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
 module.exports = {
-  mode: 'development',
+  mode: "development",
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebook/create-react-app/issues/343.
-  devtool: 'cheap-module-source-map',
+  devtool: "cheap-module-source-map",
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
   // The first two entry points enable "hot" CSS and auto-refreshes for JS.
   entry: [
     // We ship a few polyfills by default:
-    require.resolve('./polyfills'),
+    require.resolve("./polyfills"),
     // Include an alternative client for WebpackDevServer. A client's job is to
     // connect to WebpackDevServer by a socket and get notified about changes.
     // When you save a file, the client will either apply hot updates (in case
@@ -44,10 +44,10 @@ module.exports = {
     // require.resolve('webpack-dev-server/client') + '?/',
     // require.resolve('webpack/hot/dev-server'),
     // require.resolve('react-dev-utils/webpackHotDevClient'),
-    require.resolve('../scripts/utils/webpackHotDevClient'),
+    require.resolve("../scripts/utils/webpackHotDevClient"),
 
     // Errors should be considered fatal in development
-    require.resolve('react-error-overlay'),
+    require.resolve("react-error-overlay"),
 
     paths.appIndexJs
   ],
@@ -57,30 +57,30 @@ module.exports = {
     // This does not produce a real file. It's just the virtual path that is
     // served by WebpackDevServer in development. This is the JS bundle
     // containing code from all our entry points, and the Webpack runtime.
-    filename: 'static/js/bundle.js',
+    filename: "static/js/bundle.js",
     // There are also additional JS chunk files if you use code splitting.
-    chunkFilename: 'static/js/[name].chunk.js',
+    chunkFilename: "static/js/[name].chunk.js",
     // This is the URL that app is served from. We use "/" in development.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
     devtoolModuleFilenameTemplate: info =>
-      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')
+      path.resolve(info.absoluteResourcePath).replace(/\\/g, "/")
   },
   optimization: {
     // Automatically split vendor and commons
     // https://twitter.com/wSokra/status/969633336732905474
     // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
     splitChunks: {
-      chunks: 'all',
-      name: 'vendors'
+      chunks: "all",
+      name: "vendors"
     },
     // Keep the runtime chunk seperated to enable long term caching
     // https://twitter.com/wSokra/status/969679223278505985
     runtimeChunk: true
   },
   resolve: {
-    modules: ['node_modules'],
-    extensions: ['.js', '.elm']
+    modules: ["node_modules"],
+    extensions: [".js", ".elm"]
   },
   module: {
     noParse: /\.elm$/,
@@ -93,18 +93,18 @@ module.exports = {
         test: /\.js$/,
         exclude: [/[/\\\\]elm-stuff[/\\\\]/, /[/\\\\]node_modules[/\\\\]/],
         include: paths.appSrc,
-        loader: require.resolve('babel-loader'),
+        loader: require.resolve("babel-loader"),
         query: {
           presets: [
             [
-              require.resolve('@babel/preset-env'),
+              require.resolve("@babel/preset-env"),
               {
                 // `entry` transforms `@babel/polyfill` into individual requires for
                 // the targeted browsers. This is safer than `usage` which performs
                 // static code analysis to determine what's required.
                 // This is probably a fine default to help trim down bundles when
                 // end-users inevitably import '@babel/polyfill'.
-                useBuiltIns: 'entry',
+                useBuiltIns: "entry",
                 // Do not transform modules to CJS
                 modules: false
               }
@@ -113,7 +113,7 @@ module.exports = {
           plugins: [
             // Polyfills the runtime needed for async/await and generators
             [
-              require('@babel/plugin-transform-runtime').default,
+              require("@babel/plugin-transform-runtime").default,
               {
                 helpers: false,
                 regenerator: true
@@ -128,14 +128,14 @@ module.exports = {
         test: /\.js$/,
         use: [
           {
-            loader: require.resolve('babel-loader'),
+            loader: require.resolve("babel-loader"),
             options: {
               babelrc: false,
               compact: false,
               presets: [
                 [
                   // Latest stable ECMAScript features
-                  require('@babel/preset-env').default,
+                  require("@babel/preset-env").default,
                   {
                     // Do not transform modules to CJS
                     modules: false
@@ -154,29 +154,29 @@ module.exports = {
         exclude: [/[/\\\\]elm-stuff[/\\\\]/, /[/\\\\]node_modules[/\\\\]/],
         use: [
           {
-            loader: require.resolve('elm-hot-webpack-loader')
+            loader: require.resolve("elm-hot-webpack-loader")
           },
           // string-replace-loader works as InterpolateHtmlPlugin for Elm,
           // it replaces all of the %PUBLIC_URL% with the URL of your
           // application, so you could serve static assets outside of the
           // module system.
           {
-            loader: require.resolve('string-replace-loader'),
+            loader: require.resolve("string-replace-loader"),
             query: {
-              search: '%PUBLIC_URL%',
+              search: "%PUBLIC_URL%",
               replace: publicUrl,
-              flags: 'g'
+              flags: "g"
             }
           },
           {
-            loader: require.resolve('elm-webpack-loader'),
+            loader: require.resolve("elm-webpack-loader"),
             options: {
               verbose: true,
               // If ELM_DEBUGGER was set to "false", disable it. Otherwise
               // for invalid values, "true" and as a default, enable it
-              debug: process.env.ELM_DEBUGGER === 'false' ? false : true,
+              debug: process.env.ELM_DEBUGGER === "false" ? false : true,
               pathToElm: paths.elm,
-              runtimeOptions: ['-A128M', '-H128M', '-n8m'],
+              runtimeOptions: ["-A128M", "-H128M", "-n8m"],
               forceWatch: true
             }
           }
@@ -192,9 +192,9 @@ module.exports = {
       {
         test: /\.css/,
         use: [
-          require.resolve('style-loader'),
+          require.resolve("style-loader"),
           {
-            loader: require.resolve('css-loader'),
+            loader: require.resolve("css-loader"),
             options: {
               importLoaders: 1
             }
@@ -203,15 +203,15 @@ module.exports = {
             // Options for PostCSS as we reference these options twice
             // Adds vendor prefixing based on your specified browser support in
             // package.json
-            loader: require.resolve('postcss-loader'),
+            loader: require.resolve("postcss-loader"),
             options: {
               // Necessary for external CSS imports to work
               // https://github.com/facebook/create-react-app/issues/2677
-              ident: 'postcss',
+              ident: "postcss",
               plugins: () => [
-                require('postcss-flexbugs-fixes'),
+                require("postcss-flexbugs-fixes"),
                 autoprefixer({
-                  flexbox: 'no-2009'
+                  flexbox: "no-2009"
                 })
               ]
             }
@@ -221,19 +221,19 @@ module.exports = {
 
       {
         exclude: [/\.html$/, /\.js$/, /\.elm$/, /\.css$/, /\.json$/, /\.svg$/],
-        loader: require.resolve('url-loader'),
+        loader: require.resolve("url-loader"),
         options: {
           limit: 10000,
-          name: 'static/media/[name].[hash:8].[ext]'
+          name: "static/media/[name].[hash:8].[ext]"
         }
       },
 
       // "file" loader for svg
       {
         test: /\.svg$/,
-        loader: require.resolve('file-loader'),
+        loader: require.resolve("file-loader"),
         options: {
-          name: 'static/media/[name].[hash:8].[ext]'
+          name: "static/media/[name].[hash:8].[ext]"
         }
       }
     ]
@@ -263,11 +263,11 @@ module.exports = {
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
   node: {
-    dgram: 'empty',
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty',
-    child_process: 'empty'
+    dgram: "empty",
+    fs: "empty",
+    net: "empty",
+    tls: "empty",
+    child_process: "empty"
   },
   // Turn off performance processing because we utilize
   // our own hints via the FileSizeReporter
