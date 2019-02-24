@@ -1,8 +1,8 @@
 import "./main.css";
 import { Elm } from "./Main.elm";
 import registerServiceWorker from "./registerServiceWorker";
-import * as firebaseui from "firebaseui";
-import * as firebase from"firebase";
+import firebaseui from "firebaseui";
+import firebase from "firebase";
 
 // Initialize Firebase
 const config = {
