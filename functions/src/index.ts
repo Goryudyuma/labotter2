@@ -30,7 +30,8 @@ export const firstLogin = functions.auth.user().onCreate(user => {
         laboin: "らぼいん!",
         laboout: "らぼりだ!",
         labonow: "らぼなう!"
-      }
+      },
+      history:[]
     })
     .then(() => {
       return db
