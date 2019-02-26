@@ -329,7 +329,7 @@ mainView model =
     in
     Element.column
         [ Element.height Element.fill
-        , Element.width Element.fill
+        , Element.centerX
         ]
         [ Element.html <|
             div [ hidden <| not firebaseui ]
