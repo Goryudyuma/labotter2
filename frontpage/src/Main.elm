@@ -13,6 +13,7 @@ port module Main exposing
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Element
+import Element.Events
 import Html
     exposing
         ( Html
@@ -172,6 +173,7 @@ type Msg
     | ChangeRouting Url.Url
     | ChangeTweetMessageLaboin String
     | RequestChangeUrl Browser.UrlRequest
+    | GoTo String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -241,6 +243,9 @@ update msg model =
                 Browser.External href ->
                     ( model, Nav.load href )
 
+        GoTo url ->
+            ( model, Nav.pushUrl model.key url )
+
 
 
 ---- VIEW ----
@@ -257,7 +262,7 @@ view model =
                         , Element.width Element.fill
                         ]
                     <|
-                        footerView
+                        footerView model
 
                 False ->
                     Element.none
@@ -267,7 +272,7 @@ view model =
         [ Element.layout [] <|
             Element.column [ Element.height Element.fill, Element.width Element.fill ]
                 [ Element.el
-                    [ Element.height Element.fill
+                    [ Element.height <| Element.fillPortion 1
                     , Element.width Element.fill
                     ]
                   <|
@@ -278,7 +283,12 @@ view model =
                     ]
                   <|
                     mainView model
-                , footer
+                , Element.el
+                    [ Element.height <| Element.fillPortion 1
+                    , Element.width Element.fill
+                    ]
+                  <|
+                    footer
                 ]
         ]
     }
@@ -289,21 +299,32 @@ headerView =
     Element.html <| div [] []
 
 
-footerView : Element.Element Msg
-footerView =
+footerView : Model -> Element.Element Msg
+footerView model =
     Element.row [ Element.height Element.fill, Element.width Element.fill ]
-        [ Element.el [ Element.height Element.fill, Element.width <| Element.fillPortion 1 ] <|
+        [ Element.el
+            [ Element.height Element.fill
+            , Element.width <| Element.fillPortion 1
+            , Element.Events.onMouseDown <| GoTo "/"
+            ]
+          <|
             Element.el [ Element.centerX, Element.centerY ] <|
-                Element.html <|
-                    a [] [ text "Home" ]
-        , Element.el [ Element.height Element.fill, Element.width <| Element.fillPortion 2 ] <|
+                Element.text "Home"
+        , Element.el
+            [ Element.height Element.fill
+            , Element.width <| Element.fillPortion 2
+            ]
+          <|
             Element.el [ Element.centerX, Element.centerY ] <|
-                Element.html <|
-                    a [] [ text "らぼなう！" ]
-        , Element.el [ Element.height Element.fill, Element.width <| Element.fillPortion 1 ] <|
+                Element.text "らぼなう！"
+        , Element.el
+            [ Element.height Element.fill
+            , Element.width <| Element.fillPortion 1
+            , Element.Events.onMouseDown <| GoTo "/config"
+            ]
+          <|
             Element.el [ Element.centerX, Element.centerY ] <|
-                Element.html <|
-                    a [] [ text "config" ]
+                Element.text "config"
         ]
 
 
