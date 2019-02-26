@@ -13,6 +13,7 @@ port module Main exposing
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Element
+import Element.Background
 import Element.Events
 import Html
     exposing
@@ -306,13 +307,19 @@ footerView model =
             [ Element.height Element.fill
             , Element.width <| Element.fillPortion 1
             , Element.Events.onMouseDown <| GoTo "/"
+            , Element.Background.color (Element.rgb255 0 128 128)
             ]
           <|
-            Element.el [ Element.centerX, Element.centerY ] <|
+            Element.el
+                [ Element.centerX
+                , Element.centerY
+                ]
+            <|
                 Element.text "Home"
         , Element.el
             [ Element.height Element.fill
             , Element.width <| Element.fillPortion 2
+            , Element.Background.color (Element.rgb255 128 0 128)
             ]
           <|
             Element.el [ Element.centerX, Element.centerY ] <|
@@ -321,6 +328,7 @@ footerView model =
             [ Element.height Element.fill
             , Element.width <| Element.fillPortion 1
             , Element.Events.onMouseDown <| GoTo "/config"
+            , Element.Background.color (Element.rgb255 128 128 0)
             ]
           <|
             Element.el [ Element.centerX, Element.centerY ] <|
