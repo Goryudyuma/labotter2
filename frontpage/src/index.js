@@ -124,6 +124,11 @@ firebase.auth().onAuthStateChanged(function(user) {
       const provider = new firebase.auth.TwitterAuthProvider();
       firebase.auth().currentUser.linkWithRedirect(provider);
     });
+
+    // unlink twitter
+    app.ports.unlink_twitter.subscribe(() => {
+      user.unlink("twitter.com");
+    });
   }
 });
 

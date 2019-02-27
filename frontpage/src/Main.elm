@@ -142,6 +142,9 @@ port laboout : Int -> Cmd msg
 port link_twitter : () -> Cmd msg
 
 
+port unlink_twitter : () -> Cmd msg
+
+
 port updatelabotimes : (List Period -> msg) -> Sub msg
 
 
@@ -170,6 +173,7 @@ type Msg
     | UpdateLaboinTime Int
     | SetCurrentTime Time.Posix
     | LinkTwitter
+    | UnlinkTwitter
     | None
     | ChangeRouting Url.Url
     | ChangeTweetMessageLaboin String
@@ -219,6 +223,9 @@ update msg model =
 
         LinkTwitter ->
             ( model, link_twitter () )
+
+        UnlinkTwitter ->
+            ( model, unlink_twitter () )
 
         None ->
             ( model, Cmd.none )
@@ -436,6 +443,7 @@ mainPageView model =
             [ div []
                 [ h1 [ style "display" "inline" ] [ text "らぼったあ" ]
                 , button [ onClick LinkTwitter, style "display" "inline-block" ] [ text "Twitter" ]
+                , button [ onClick UnlinkTwitter, style "display" "inline-block" ] [ text "Unlink Twitter" ]
                 , button [ onClick Logout, style "display" "inline-block" ] [ text "ログアウト" ]
                 ]
             , div []
