@@ -37,8 +37,8 @@ url2Routing isUserLoggedIn url =
         |> changeRouting isUserLoggedIn
 
 
-routingTestHelper : String -> Bool -> Routing -> Expect.Expectation
-routingTestHelper url isUserLoggedIn expected =
+routingTestHelper : Bool -> String -> Routing -> Expect.Expectation
+routingTestHelper isUserLoggedIn url expected =
     url2Routing isUserLoggedIn url
         |> Expect.equal expected
 
@@ -46,26 +46,40 @@ routingTestHelper url isUserLoggedIn expected =
 routingTest : Test
 routingTest =
     describe "changeRouting"
-        [ describe "ログイン済みの時"
+        [ describe "ログイン済みの時" <|
+            let
+                isUserLoggedIn =
+                    True
+
+                routingTestHelperLoggedIn =
+                    routingTestHelper isUserLoggedIn
+            in
             [ test "root" <|
                 \_ ->
-                    routingTestHelper "https://labotter2.firebaseapp.com/" True MainPage
+                    routingTestHelperLoggedIn "https://labotter2.firebaseapp.com/" MainPage
             , test "config" <|
                 \_ ->
-                    routingTestHelper "https://labotter2.firebaseapp.com/config" True ConfigPage
+                    routingTestHelperLoggedIn "https://labotter2.firebaseapp.com/config" ConfigPage
             , test "login" <|
                 \_ ->
-                    routingTestHelper "https://labotter2.firebaseapp.com/login" True LoginPage
+                    routingTestHelperLoggedIn "https://labotter2.firebaseapp.com/login" LoginPage
             ]
-        , describe "ログインしていない時"
+        , describe "ログインしていない時" <|
+            let
+                isUserLoggedIn =
+                    False
+
+                routingTestHelperNotLoggedIn =
+                    routingTestHelper isUserLoggedIn
+            in
             [ test "root" <|
                 \_ ->
-                    routingTestHelper "https://labotter2.firebaseapp.com/" False TopPage
+                    routingTestHelperNotLoggedIn "https://labotter2.firebaseapp.com/" TopPage
             , test "config" <|
                 \_ ->
-                    routingTestHelper "https://labotter2.firebaseapp.com/config" False TopPage
+                    routingTestHelperNotLoggedIn "https://labotter2.firebaseapp.com/config" TopPage
             , test "login" <|
                 \_ ->
-                    routingTestHelper "https://labotter2.firebaseapp.com/login" False LoginPage
+                    routingTestHelperNotLoggedIn "https://labotter2.firebaseapp.com/login" LoginPage
             ]
         ]
