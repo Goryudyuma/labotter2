@@ -19,10 +19,12 @@ import Html
     exposing
         ( Html
         , a
+        , br
         , button
         , div
         , h1
         , h2
+        , h3
         , input
         , span
         , text
@@ -470,17 +472,23 @@ mainPageView model =
             []
             [ div []
                 [ h1 [ style "display" "inline" ] [ text "らぼったあ" ]
+                , br [] []
                 , button [ onClick LinkTwitter, style "display" "inline-block" ] [ text "Twitter" ]
                 , button [ onClick UnlinkTwitter, style "display" "inline-block" ] [ text "Unlink Twitter" ]
+                , br [] []
                 , button [ onClick LinkGoogle, style "display" "inline-block" ] [ text "Google" ]
                 , button [ onClick UnlinkGoogle, style "display" "inline-block" ] [ text "Unlink Google" ]
+                , br [] []
                 , button [ onClick LinkGithub, style "display" "inline-block" ] [ text "Github" ]
                 , button [ onClick UnlinkGithub, style "display" "inline-block" ] [ text "Unlink Github" ]
+                , br [] []
                 , button [ onClick Logout, style "display" "inline-block" ] [ text "ログアウト" ]
                 ]
             , div []
-                [ h2 [] [ text <| "らぼいん: " ++ laboinTimeStr ]
-                , h2 [] [ text <| "らぼりだ: " ++ labooutTimeStr ]
+                [ h2 [] [ text <| "らぼいん " ]
+                , h3 [] [ text <| laboinTimeStr ]
+                , h2 [] [ text <| "らぼりだ " ]
+                , h3 [] [ text <| labooutTimeStr ]
                 ]
             , laboNowUpdateButton
             ]
