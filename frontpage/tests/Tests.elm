@@ -1,4 +1,4 @@
-module Tests exposing (all)
+module Tests exposing (routingTest)
 
 import Expect
 import Main exposing (..)
@@ -37,73 +37,35 @@ url2Routing isUserLoggedIn url =
         |> changeRouting isUserLoggedIn
 
 
-all : Test
-all =
-    describe "A Test Suite"
-        [ describe "changeRouting"
-            [ describe "ログイン済みの時"
-                [ test "root" <|
-                    let
-                        expected =
-                            MainPage
+routingTestHelper : String -> Bool -> Routing -> Expect.Expectation
+routingTestHelper url isUserLoggedIn expected =
+    url2Routing isUserLoggedIn url
+        |> Expect.equal expected
 
-                        actual =
-                            url2Routing True "https://labotter2.firebaseapp.com/"
-                    in
-                    \_ ->
-                        Expect.equal expected actual
-                , test "config" <|
-                    let
-                        expected =
-                            ConfigPage
 
-                        actual =
-                            url2Routing True "https://labotter2.firebaseapp.com/config"
-                    in
-                    \_ ->
-                        Expect.equal expected actual
-                , test "login" <|
-                    let
-                        expected =
-                            LoginPage
-
-                        actual =
-                            url2Routing True "https://labotter2.firebaseapp.com/login"
-                    in
-                    \_ ->
-                        Expect.equal expected actual
-                ]
-            , describe "ログインしていない時"
-                [ test "root" <|
-                    let
-                        expected =
-                            TopPage
-
-                        actual =
-                            url2Routing False "https://labotter2.firebaseapp.com/"
-                    in
-                    \_ ->
-                        Expect.equal expected actual
-                , test "config" <|
-                    let
-                        expected =
-                            TopPage
-
-                        actual =
-                            url2Routing False "https://labotter2.firebaseapp.com/config"
-                    in
-                    \_ ->
-                        Expect.equal expected actual
-                , test "login" <|
-                    let
-                        expected =
-                            LoginPage
-
-                        actual =
-                            url2Routing False "https://labotter2.firebaseapp.com/login"
-                    in
-                    \_ ->
-                        Expect.equal expected actual
-                ]
+routingTest : Test
+routingTest =
+    describe "changeRouting"
+        [ describe "ログイン済みの時"
+            [ test "root" <|
+                \_ ->
+                    routingTestHelper "https://labotter2.firebaseapp.com/" True MainPage
+            , test "config" <|
+                \_ ->
+                    routingTestHelper "https://labotter2.firebaseapp.com/config" True ConfigPage
+            , test "login" <|
+                \_ ->
+                    routingTestHelper "https://labotter2.firebaseapp.com/login" True LoginPage
+            ]
+        , describe "ログインしていない時"
+            [ test "root" <|
+                \_ ->
+                    routingTestHelper "https://labotter2.firebaseapp.com/" False TopPage
+            , test "config" <|
+                \_ ->
+                    routingTestHelper "https://labotter2.firebaseapp.com/config" False TopPage
+            , test "login" <|
+                \_ ->
+                    routingTestHelper "https://labotter2.firebaseapp.com/login" False LoginPage
             ]
         ]
