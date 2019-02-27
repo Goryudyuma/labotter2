@@ -334,7 +334,7 @@ view model =
 
 headerView : Element.Element Msg
 headerView =
-    Element.html <| div [] []
+    Element.none
 
 
 footerView : Model -> Element.Element Msg
