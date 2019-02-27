@@ -23,23 +23,41 @@ let app = Elm.Main.init({
 
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
+firebase
+  .firestore()
+  .enablePersistence()
+  .catch(function(err) {
+    if (err.code === "failed-precondition") {
+      alert("別タブで開いています");
+    }
+  });
+
 function register(result) {
   if (result.credential) {
+    const credential = result.credential;
+    const user = result.user;
+    const uid = user.uid;
+    const db = firebase.firestore();
+    const mydb = db.collection("users").doc(uid);
     // Accounts successfully linked.
-    if (result.additionalUserInfo.providerId === "twitter.com") {
-      const credential = result.credential;
-      const user = result.user;
-      const uid = user.uid;
-      const db = firebase.firestore();
-      const mydb = db.collection("users").doc(uid);
+    switch (result.additionalUserInfo.providerId) {
+      case "twitter.com":
+        const batch = db.batch();
+        batch.update(mydb, { twitter: true });
+        batch.update(mydb.collection("credential").doc("twitter"), {
+          accessToken: credential.accessToken,
+          secret: credential.secret
+        });
+        batch.commit();
+        break;
 
-      const batch = db.batch();
-      batch.update(mydb, { twitter: true });
-      batch.update(mydb.collection("credential").doc("twitter"), {
-        accessToken: credential.accessToken,
-        secret: credential.secret
-      });
-      batch.commit();
+      case "google.com":
+        mydb.update({ google: true });
+        break;
+
+      case "github.com":
+        mydb.update({ github: true });
+        break;
     }
   }
   return true;
@@ -127,7 +145,44 @@ firebase.auth().onAuthStateChanged(function(user) {
 
     // unlink twitter
     app.ports.unlink_twitter.subscribe(() => {
-      user.unlink("twitter.com");
+      firebase
+        .auth()
+        .currentUser.unlink("twitter.com")
+        .then(() => {
+          mydb.update({ twitter: false });
+        });
+    });
+
+    // link github
+    app.ports.link_github.subscribe(() => {
+      const provider = new firebase.auth.GithubAuthProvider();
+      firebase.auth().currentUser.linkWithRedirect(provider);
+    });
+
+    // unlink github
+    app.ports.unlink_github.subscribe(() => {
+      firebase
+        .auth()
+        .currentUser.unlink("github.com")
+        .then(() => {
+          mydb.update({ github: false });
+        });
+    });
+
+    // link google
+    app.ports.link_google.subscribe(() => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().currentUser.linkWithRedirect(provider);
+    });
+
+    // unlink google
+    app.ports.unlink_google.subscribe(() => {
+      firebase
+        .auth()
+        .currentUser.unlink("google.com")
+        .then(() => {
+          mydb.update({ google: false });
+        });
     });
   }
 });

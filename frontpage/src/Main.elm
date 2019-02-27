@@ -145,6 +145,18 @@ port link_twitter : () -> Cmd msg
 port unlink_twitter : () -> Cmd msg
 
 
+port link_github : () -> Cmd msg
+
+
+port unlink_github : () -> Cmd msg
+
+
+port link_google : () -> Cmd msg
+
+
+port unlink_google : () -> Cmd msg
+
+
 port updatelabotimes : (List Period -> msg) -> Sub msg
 
 
@@ -174,6 +186,10 @@ type Msg
     | SetCurrentTime Time.Posix
     | LinkTwitter
     | UnlinkTwitter
+    | LinkGoogle
+    | UnlinkGoogle
+    | LinkGithub
+    | UnlinkGithub
     | None
     | ChangeRouting Url.Url
     | ChangeTweetMessageLaboin String
@@ -226,6 +242,18 @@ update msg model =
 
         UnlinkTwitter ->
             ( model, unlink_twitter () )
+
+        LinkGoogle ->
+            ( model, link_google () )
+
+        UnlinkGoogle ->
+            ( model, unlink_google () )
+
+        LinkGithub ->
+            ( model, link_github () )
+
+        UnlinkGithub ->
+            ( model, unlink_github () )
 
         None ->
             ( model, Cmd.none )
@@ -444,6 +472,10 @@ mainPageView model =
                 [ h1 [ style "display" "inline" ] [ text "らぼったあ" ]
                 , button [ onClick LinkTwitter, style "display" "inline-block" ] [ text "Twitter" ]
                 , button [ onClick UnlinkTwitter, style "display" "inline-block" ] [ text "Unlink Twitter" ]
+                , button [ onClick LinkGoogle, style "display" "inline-block" ] [ text "Google" ]
+                , button [ onClick UnlinkGoogle, style "display" "inline-block" ] [ text "Unlink Google" ]
+                , button [ onClick LinkGithub, style "display" "inline-block" ] [ text "Github" ]
+                , button [ onClick UnlinkGithub, style "display" "inline-block" ] [ text "Unlink Github" ]
                 , button [ onClick Logout, style "display" "inline-block" ] [ text "ログアウト" ]
                 ]
             , div []

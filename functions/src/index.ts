@@ -23,7 +23,7 @@ export const firstLogin = functions.auth.user().onCreate(user => {
   return db
     .collection("users")
     .doc(user.uid.toString())
-    .set({
+    .update({
       labointime: 0,
       twitter: false,
       tweetContent: {
@@ -39,7 +39,7 @@ export const firstLogin = functions.auth.user().onCreate(user => {
         .doc(user.uid.toString())
         .collection("credential")
         .doc("twitter")
-        .set({ accessToken: "", secret: "" });
+        .update({ accessToken: "", secret: "" });
     });
 });
 
