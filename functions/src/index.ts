@@ -23,15 +23,17 @@ export const firstLogin = functions.auth.user().onCreate(user => {
   return db
     .collection("users")
     .doc(user.uid.toString())
-    .update({
+    .set({
       labointime: 0,
       twitter: false,
+      google: false,
+      github: false,
       tweetContent: {
         laboin: "らぼいん!",
         laboout: "らぼりだ!",
         labonow: "らぼなう!"
       },
-      history:[]
+      history: []
     })
     .then(() => {
       return db
@@ -39,7 +41,7 @@ export const firstLogin = functions.auth.user().onCreate(user => {
         .doc(user.uid.toString())
         .collection("credential")
         .doc("twitter")
-        .update({ accessToken: "", secret: "" });
+        .set({ accessToken: "", secret: "" });
     });
 });
 
