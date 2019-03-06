@@ -5,7 +5,8 @@ workflow "build and deploy" {
 
 action "frontend" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  runs = "--prefix ./frontpage install ./frontpage"
+  runs = "install"
+  args = "--prefix ./frontpage ./frontpage"
 }
 
 action "GitHub Action for Firebase" {
@@ -17,5 +18,6 @@ action "GitHub Action for Firebase" {
 
 action "functions" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  runs = "--prefix ./functions install ./functions"
+  runs = "install"
+  args = "--prefix ./functions ./functions"
 }
