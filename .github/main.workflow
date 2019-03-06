@@ -13,6 +13,9 @@ action "GitHub Action for Firebase" {
   needs = ["frontend", "functions"]
   secrets = ["FIREBASE_TOKEN"]
   args = "deploy"
+  env = {
+    PROJECT_ID = "labotter2"
+  }
 }
 
 action "functions" {
