@@ -2,9 +2,10 @@ import "./main.css";
 import { Elm } from "./Main.elm";
 import registerServiceWorker from "./registerServiceWorker";
 import firebaseui from "firebaseui";
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
+import firebase from "firebase/app";
+import "firebase/auth";
+import "firebase/firestore";
+import "firebase/functions";
 
 // Initialize Firebase
 const config = {
@@ -101,39 +102,21 @@ firebase.auth().onAuthStateChanged(function(user) {
 
     // laboin
     app.ports.laboin.subscribe(labointime => {
-      db.runTransaction(function(transaction) {
-        // This code may get re-run multiple times if there are conflicts.
-        return transaction.get(mydb).then(function(mydata) {
-          if (mydata.exists) {
-            transaction.update(mydb, {
-              labointime: labointime
-            });
-          }
-        });
-      });
+      mydb.update({ labointime: labointime });
 
       firebase.functions().httpsCallable("laboin")();
     });
 
     // laboout
     app.ports.laboout.subscribe(laboouttime => {
-      db.runTransaction(function(transaction) {
-        // This code may get re-run multiple times if there are conflicts.
-        return transaction.get(mydb).then(function(mydata) {
-          if (mydata.exists) {
-            if (mydata.data().labointime !== 0) {
-              transaction.update(mydb, {
-                history: firebase.firestore.FieldValue.arrayUnion({
-                  labointime: mydata.data().labointime,
-                  laboouttime: laboouttime
-                })
-              });
-            }
-            transaction.update(mydb, {
-              labointime: 0
-            });
-          }
+      mydb.get().then(doc => {
+        mydb.update({
+          history: firebase.firestore.FieldValue.arrayUnion({
+            labointime: doc.data().labointime,
+            laboouttime: laboouttime
+          })
         });
+        mydb.update({ labointime: 0 });
       });
 
       firebase.functions().httpsCallable("laboout")();
