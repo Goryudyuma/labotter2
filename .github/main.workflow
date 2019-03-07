@@ -5,7 +5,7 @@ workflow "build and deploy" {
   on = "push"
 }
 
-action "frontend install" {
+action "frontpage install" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
   args = "install --prefix ./frontpage ./frontpage"
 }
@@ -13,8 +13,7 @@ action "frontend install" {
 action "GitHub Action for Firebase" {
   uses = "w9jds/firebase-action@7d6b2b058813e1224cdd4db255b2f163ae4084d3"
   needs = [
-    "functions build",
-    "frontend build",
+    "Filter master",
   ]
   secrets = ["FIREBASE_TOKEN"]
   args = "deploy"
@@ -40,21 +39,26 @@ action "functions build" {
   args = "run build --prefix ./functions "
 }
 
-action "frontend test" {
+action "frontpage test" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
   args = "run test --prefix ./frontpage "
-  needs = ["frontend install"]
+  needs = ["frontpage install"]
 }
 
-action "GitHub Action for npm-1" {
+action "frontpage build-css" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
   args = "run build-css --prefix ./frontpage "
-  runs = "frontpage build-css"
-  needs = ["frontend test"]
+  needs = ["frontpage install"]
 }
 
-action "frontend build" {
+action "frontpage build" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  needs = ["GitHub Action for npm-1"]
   args = "run build --prefix ./frontpage "
+  needs = ["frontpage test", "frontpage build-css"]
+}
+
+action "Filter master" {
+  uses = "actions/bin/filter@d820d56839906464fb7a57d1b4e1741cf5183efa"
+  needs = ["frontpage build", "functions build"]
+  args = "branch master"
 }
