@@ -1,6 +1,6 @@
 workflow "build and deploy" {
   resolves = ["GitHub Action for Firebase", "frontend", "functions"]
-  on = "release"
+  on = "push"
 }
 
 action "frontend" {
