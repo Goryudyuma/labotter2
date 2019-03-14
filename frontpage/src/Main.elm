@@ -17,8 +17,7 @@ import Element.Background
 import Element.Events
 import Html
     exposing
-        ( Html
-        , a
+        ( a
         , br
         , button
         , div
@@ -33,7 +32,7 @@ import Html.Attributes exposing (class, hidden, href, id, placeholder, style, va
 import Html.Events exposing (onClick, onInput)
 import Time exposing (Month(..))
 import Url
-import Url.Parser exposing ((</>), Parser, map, oneOf, parse, s, top)
+import Url.Parser exposing (Parser, map, oneOf, parse, s, top)
 
 
 
@@ -55,22 +54,21 @@ url2Routing url =
 
 realRouting : Routing -> Bool -> Routing
 realRouting nextPage isUserLoggedIn =
-    case isUserLoggedIn of
-        True ->
-            case nextPage of
-                TopPage ->
-                    MainPage
+    if isUserLoggedIn then
+        case nextPage of
+            TopPage ->
+                MainPage
 
-                other ->
-                    other
+            other ->
+                other
 
-        False ->
-            case nextPage of
-                LoginPage ->
-                    LoginPage
+    else
+        case nextPage of
+            LoginPage ->
+                LoginPage
 
-                other ->
-                    TopPage
+            _ ->
+                TopPage
 
 
 route : Parser (Routing -> a) a
@@ -169,7 +167,7 @@ port userlogin : (Bool -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
         [ updatelabotimes UpdateLaboTimes
         , updatelabointime UpdateLaboinTime
@@ -293,17 +291,16 @@ view : Model -> Document Msg
 view model =
     let
         footer =
-            case model.isUserLoggedIn of
-                True ->
-                    Element.el
-                        [ Element.height Element.fill
-                        , Element.width Element.fill
-                        ]
-                    <|
-                        footerView model
+            if model.isUserLoggedIn then
+                Element.el
+                    [ Element.height Element.fill
+                    , Element.width Element.fill
+                    ]
+                <|
+                    footerView model
 
-                False ->
-                    Element.none
+            else
+                Element.none
     in
     { title = "らぼったー2"
     , body =
@@ -338,7 +335,7 @@ headerView =
 
 
 footerView : Model -> Element.Element Msg
-footerView model =
+footerView _ =
     Element.row [ Element.height Element.fill, Element.width Element.fill ]
         [ Element.el
             [ Element.height Element.fill
@@ -429,17 +426,11 @@ mainPageView model =
                 time2Str model.labointime
 
             else
-                case
-                    model.labotimes
-                        |> List.reverse
-                        |> List.head
-                of
-                    Just t ->
-                        t.labointime
-                            |> time2Str
-
-                    Nothing ->
-                        Nothing
+                model.labotimes
+                    |> List.reverse
+                    |> List.head
+                    |> Maybe.map .labointime
+                    |> Maybe.andThen time2Str
 
         laboinTimeStr : String
         laboinTimeStr =
@@ -451,17 +442,11 @@ mainPageView model =
                 Nothing
 
             else
-                case
-                    model.labotimes
-                        |> List.reverse
-                        |> List.head
-                of
-                    Just t ->
-                        t.laboouttime
-                            |> time2Str
-
-                    Nothing ->
-                        Nothing
+                model.labotimes
+                    |> List.reverse
+                    |> List.head
+                    |> Maybe.map .laboouttime
+                    |> Maybe.andThen time2Str
 
         labooutTimeStr : String
         labooutTimeStr =
@@ -503,12 +488,12 @@ configPageView model =
 
 
 loginPageView : Model -> Element.Element Msg
-loginPageView model =
+loginPageView _ =
     Element.html <| div [] []
 
 
 topPageView : Model -> Element.Element Msg
-topPageView model =
+topPageView _ =
     Element.column [ Element.width Element.fill, Element.height Element.fill ]
         [ Element.el
             [ Element.height Element.fill
